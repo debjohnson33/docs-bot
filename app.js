@@ -18,7 +18,7 @@
 
 var express = require('express'); // app server
 var bodyParser = require('body-parser'); // parser for post requests
-var Conversation = require('watson-developer-cloud/conversation/v1'); // watson sdk
+var AssistantV1 = require('watson-developer-cloud/assistant/v1'); // watson sdk
 
 var sendToDiscovery = require('./discovery'); // Send to Discovery function
 var sendEntities = require('./sendEntities'); // Discovery function to query on entities
@@ -31,13 +31,11 @@ app.use(express.static('./public')); // load UI from public folder
 app.use(bodyParser.json());
 
 // Create the service wrapper
-var conversation = new Conversation({
-  // If unspecified here, the CONVERSATION_USERNAME and CONVERSATION_PASSWORD env properties will be checked
-  // After that, the SDK will fall back to the bluemix-provided VCAP_SERVICES environment property
-  // username: '<username>',
-  // password: '<password>',
-  // url: 'https://gateway.watsonplatform.net/conversation/api',
-  version_date: Conversation.VERSION_DATE_2017_04_21
+var assistant = new AssistantV1({
+  username: process.env.ASSISTANT_USERNAME,
+  password: process.env.ASSISTANT_PASSWORD,
+  version: '2018-07-10',
+  url: process.env.ASSISTANT_URL
 });
 
 // Endpoint to be call from the client side
@@ -57,7 +55,7 @@ app.post('/api/message', function(req, res) {
   };
 
   // Send the input to the conversation service
-  conversation.message(payload, function(err, data) {
+  assistant.message(payload, function(err, data) {
     if (err) {
       return res.status(err.code || 500).json(err);
     }
